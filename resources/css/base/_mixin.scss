@@ -1,0 +1,78 @@
+@charset "UTF-8";
+@use "sass:math";
+@use "sass:string";
+@use "sass:map";
+@use "sass:meta";
+
+$breakpoints: (
+    mobile: 768px,
+    tablet: 1025px,
+    laptop: 1536px,
+    sm: 360px,
+);
+
+@mixin media($from: false, $until: false, $and: false, $or: false, $etc: false, $media-type: all) {
+    /// ❓ 선택값
+    /// $from, $until : $breakpoints or number
+    /// $and : 조건 연산자
+    /// 예) @include media($from: "sm", $until: 768px, $and:"orientation: landscape")
+    /// media(false, tablet, $etc:", (max-width: 1366px) and (pointer: coarse)")
+    ///
+    $min-width: 0;
+    $max-width: 0;
+    $query: "";
+
+    @if $from {
+        @if meta.type-of($from) == number {
+            $min-width: $from;
+        } @else {
+            $min-width: map.get($breakpoints, $from);
+        }
+    }
+    @if $until {
+        @if meta.type-of($until) == number {
+            $max-width: $until - 1px;
+        } @else {
+            $max-width: map.get($breakpoints, $until) - 1px;
+        }
+    }
+
+    @if $min-width != 0 {
+        $query: "#{$query} and (min-width: #{$min-width})";
+    }
+    @if $max-width != 0 {
+        $query: "#{$query} and (max-width: #{$max-width})";
+    }
+    @if $and {
+        $query: "#{$query} and (#{$and})";
+    }
+    @if $or {
+        $query: "#{$query} or (#{$or})";
+    }
+    @if $etc {
+        $query: "#{$query} #{$etc}";
+    }
+
+    @if ($media-type == "all" and $query != "") {
+        $media-type: "";
+        $query: string.slice(string.unquote($query), 6);
+    }
+
+    @media #{$media-type + $query} {
+        @content;
+    }
+}
+
+@function to_vw($px-size) {
+    @if $px-size < 0 {
+        $px-size: $px-size * -1;
+        $size: string.unquote("calc(calc(#{$px-size}px * var(--base-ratio)) * -1)");
+        $resultVw: string.unquote("calc(calc(calc(#{$px-size} / var(--base-size)) * var(--base-percent)) * -1)");
+        @return max(#{$size}, #{$resultVw});
+    } @else {
+        $size: string.unquote("calc(#{$px-size}px * var(--base-ratio))");
+        $resultVw: string.unquote("calc(calc(#{$px-size} / var(--base-size)) * var(--base-percent))");
+        @return max(#{$size}, #{$resultVw});
+    }
+}
+
