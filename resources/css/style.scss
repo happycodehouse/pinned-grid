@@ -14,7 +14,6 @@
         justify-content: center;
         width: 100%;
         height: 100vh;
-        padding: 0 to_vw(24);
     }
 
     .intro-img {
@@ -31,11 +30,11 @@
 
     h2 {
         position: relative;
-        color: #ffffff;
+        text-align: center;
+        text-transform: uppercase;
         font-size: 14px;
         line-height: 1.3;
-        text-transform: uppercase;
-        text-align: center;
+        color: #ffffff;
     }
 }
 
@@ -47,7 +46,7 @@
         position: sticky;
         top: 0;
         padding: 0 to_vw(24);
-        will-change: transform;
+        //will-change: transform;
     }
 
     .about {
@@ -64,7 +63,7 @@
         &-title {
             width: to_vw(924);
             font-family: 'ZenSerif', serif;
-            font-size: 18px;
+            font-size: 64px;
             line-height: 1.15;
             letter-spacing: -0.02em;
         }
@@ -92,12 +91,13 @@
         grid-template-columns: repeat(3, 1fr);
         column-gap: to_vw(32);
         row-gap: to_vw(40);
-        will-change: transform;
+        //will-change: transform;
     }
 
     .grid-item {
         width: 100%;
         aspect-ratio: 1;
+        //will-change: transform;
 
         img {
             width: 100%;
