@@ -1,8 +1,11 @@
+/**
+ * 이미지(및 배경 이미지) 로드를 기다리는 프리로드 유틸
+ */
 const preloadImages = (selector = ".main-section img") => {
     return new Promise((resolve) => {
-        imagesLoaded(document.querySelectorAll(selector), { background: true }, resolve)
-    })
-}
+        imagesLoaded(document.querySelectorAll(selector), { background: true }, resolve);
+    });
+};
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,17 +24,6 @@ let columns = [];
 const Custom = {};
 
 Custom.utils = {
-    /**
-     * 이미지를 미리 디코딩해서 첫 스크롤 시 버벅임 방지
-     */
-    preloadImages: function (selector = ".main-section img") {
-        const images = document.querySelectorAll(selector);
-        const promises = Array.from(images).map((img) =>
-            img.decode ? img.decode().catch(() => {}) : Promise.resolve()
-        );
-        return Promise.all(promises);
-    },
-
     smoothScroll: function () {
         const lenis = new Lenis({
             lerp: 0.08,
@@ -89,7 +81,7 @@ Custom.utils = {
             scrollTrigger: {
                 trigger: $mainSection,
                 start: "top 57%",
-                toggleActions: "play none none reset"
+                toggleActions: "play none none reset",
             },
         });
     },
@@ -178,20 +170,61 @@ Custom.utils = {
             .add(() => this.toggleContent(timeline.scrollTrigger.direction === 1), "-=0.32");
     },
 
-    init: function () {
-        this.smoothScroll();
+    /**
+     * ScrollTrigger, 관련 tween, 인라인 transform을 모두 정리
+     * (rebuild 전 잔여 상태 제거)
+     */
+    teardown: function () {
+        ScrollTrigger.getAll().forEach((st) => st.kill());
+        gsap.killTweensOf([$mainInner, $mainTitle, $mainDesc, $gridList, ...$gridItems]);
+
+        gsap.set([$mainInner, $mainTitle, $mainDesc, $gridList, ...$gridItems], {
+            clearProps: "transform,opacity,pointerEvents",
+        });
+    },
+
+    /**
+     * 초기화 로직만 모아서 rebuild에서도 재사용
+     */
+    build: function () {
         this.initAbout();
         this.groupItemsByColumn();
         this.addParallaxOnScroll();
         this.animateTitleOnScroll();
         this.animateGridOnScroll();
-
-        // 레이아웃이 이미지 로드 이후 확정되므로 한 번 더 재계산
         ScrollTrigger.refresh();
+    },
+
+    /**
+     * 가로폭이 실제로 바뀌었을 때만 전체 재빌드
+     */
+    handleResize: function () {
+        let prevWidth = window.innerWidth;
+        let resizeTimeout;
+
+        window.addEventListener("resize", () => {
+            const currentWidth = window.innerWidth;
+
+            // 모바일 주소창 show/hide로 인한 세로 높이 변화는 무시
+            if (currentWidth === prevWidth) return;
+
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                prevWidth = currentWidth;
+                this.teardown();
+                this.build();
+            }, 250);
+        });
+    },
+
+    init: function () {
+        this.smoothScroll();
+        this.build();
+        this.handleResize();
     },
 };
 
 window.addEventListener("load", async () => {
-    await Custom.utils.preloadImages();
+    await preloadImages();
     Custom.utils.init();
 });
