@@ -23,7 +23,6 @@
 - **GSAP** (animations, ScrollTrigger)
 - **Lenis** (smooth scroll)
 - **JavaScript (ES6+)**
-- 
 
 ## Reference
 
